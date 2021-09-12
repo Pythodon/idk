@@ -1,0 +1,45 @@
+if (setndm) then
+setndm(3)
+end
+function unfollow(userId)
+return pcall(function()
+return game:service'HttpRbxApiService':PostAsync(
+"user/unfollow",
+"followedUserId=" .. userId,
+Enum.ThrottlingPriority.Default,
+Enum.HttpContentType.ApplicationUrlEncoded,
+Enum.HttpRequestType.Players
+)
+end)
+end
+function getFollowers(userId)
+return pcall(function()
+return game:HttpGetAsync(
+"https://www.roblox.com/users/friends/list-json?currentPage=0&friendsType=Following&imgHeight=100&imgWidth=100&pageSize=18&userId=" .. userId,
+Enum.HttpRequestType.Players
+)
+end)
+end
+local followers
+while true do
+local safe, data = getFollowers(game:service'Players'.LocalPlayer.UserId);
+if (not safe) then
+print("error:", data)
+break;
+end
+data = game:service'HttpService':JSONDecode(data)
+local following = data.Friends;
+if (#following == 0) then
+print('not following anyone anymore!')
+break;
+end
+for i,v in next, following do
+local a, b = unfollow(v.UserId)
+if (a) then
+print("Successfully unfollowed:", v.Username)
+else
+print("Failed to unfollow:", v.Username)
+end
+end
+wait()
+end
